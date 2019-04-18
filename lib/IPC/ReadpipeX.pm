@@ -2,17 +2,28 @@ package IPC::ReadpipeX;
 
 use strict;
 use warnings;
+use Carp 'croak';
 use Exporter 'import';
+use IPC::Open3;
 
 our $VERSION = '0.001';
 
 our @EXPORT = 'readpipex';
 
 sub readpipex {
-  no warnings 'exec';
-  open my $stdout, '-|', @_ or do { $? = -1; return };
+  my @cmd = @_;
+  # IPC::Open3 closes the STDIN handle in the parent, so give it a dup of STDIN
+  open my $dup, '<&', \*STDIN or croak "dup STDIN failed: $!";
+  my $stdin = '<&' . fileno $dup;
+  my ($pid, $stdout, $error);
+  {
+    local $@;
+    $error = $@ unless eval { $pid = open3 $stdin, $stdout, '>&STDERR', @cmd; 1 };
+  }
+  # Rethrow for better context
+  croak $error if defined $error;
   my @output = readline $stdout;
-  close $stdout;
+  waitpid $pid, 0;
   return wantarray ? @output : join '', @output;
 }
 
@@ -27,9 +38,7 @@ IPC::ReadpipeX - List form of readpipe/qx/backticks for capturing output
   use IPC::ReadpipeX;
 
   my @entries = readpipex 'ls', '-l', $path;
-  if ($? == -1) {
-    die "ls '$path' failed: $!";
-  } elsif ($?) {
+  if ($?) {
     my $exit = $? >> 8;
     die "ls '$path' exited with status $exit";
   }
@@ -44,12 +53,10 @@ operator or backticks (C<``>), runs a command and captures the output (STDOUT).
 However, unlike L<system|perlfunc/"system"> and L<exec|perlfunc/"exec">, the
 command will always be parsed by the shell, and it does not provide a list form
 to bypass shell parsing when multiple arguments are passed. L</"readpipex">
-provides this capability for systems that support forking, in a simple
-copy-pastable function.
+provides this capability in a simple copy-pastable function.
 
-For other methods of redirecting output, capturing STDERR, interacting with the
-process, operating system portability, and automatic error-checking, consider
-the modules listed in L</"SEE ALSO">.
+For other methods of redirecting output, capturing STDERR, and interacting with
+the process, consider the modules listed in L</"SEE ALSO">.
 
 =head1 FUNCTIONS
 
@@ -65,15 +72,16 @@ scalar context, or an array of lines in list context. If more than one argument
 is passed, the command will be executed directly rather than via the shell, as
 in L<system|perlfunc/"system"> and L<exec|perlfunc/"exec">.
 
-Like the core L<readpipe|perlfunc/"readpipe"> function and C<qx> operator,
-errors forking or running the command are indicated by L<$?|perlvar/"$?"> being
-set to C<-1>, and L<$!|perlvar/"$!"> can be inspected to determine the error.
-The exit status of the process is otherwise available in L<$?|perlvar/"$?">.
+Errors forking or running the command will raise an exception, and
+L<$!|perlvar/"$!"> will be set to the error code. The exit status of the
+process is otherwise available in L<$?|perlvar/"$?"> as normal.
 
-The code of this function can easily be copy-pasted and is shown below.
+On systems that support forking with Perl 5.8 or newer, and Windows with Perl
+5.22 or newer, the simple code below can be copy-pasted to implement readpipex.
 
   sub readpipex {
-    open my $stdout, '-|', @_ or do { $? = -1; return };
+    no warnings 'exec';
+    open my $stdout, '-|', @_ or die "readpipex '$_[0]' failed: $!";
     my @output = readline $stdout;
     close $stdout;
     return wantarray ? @output : join '', @output;
@@ -89,21 +97,8 @@ Behavior when passing no arguments is unspecified.
 
 =item *
 
-The list form of L<open|perlfunc/"open"> requires Perl 5.8+.
-
-=item *
-
-The C<-|> open mode is unsupported on Windows.
-
-=item *
-
 Errors while reading or closing the pipe, though exceedingly rare, are ignored,
 as in the core readpipe.
-
-=item *
-
-C<exec> warnings are disabled, because the code to handle these correctly would
-be longer than the current function. Make sure to check C<$?> for failure.
 
 =back
 
@@ -130,13 +125,11 @@ This is free software, licensed under:
 =item *
 
 L<IPC::System::Simple> - provides C<system> and C<capture> functions with
-automatic error-checking, optional exit status checking, and variants that
-always bypass the shell
+optional exit status checking and variants that always bypass the shell
 
 =item *
 
-L<IPC::Run3> - run a process and direct STDIN, STDOUT, and STDERR with
-automatic error-checking
+L<IPC::Run3> - run a process and direct STDIN, STDOUT, and STDERR
 
 =item *
 

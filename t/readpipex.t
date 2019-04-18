@@ -16,8 +16,9 @@ is readpipex($^X, '-e', 'exit 5'), '', 'no output';
 is +($? >> 8), 5, 'exit status is 5';
 
 $! = 0;
-is readpipex('command-that-does-not-exist', 'args'), undef, 'invalid command';
-is $?, -1, '$? is -1';
+ok !eval { readpipex('command-that-does-not-exist', 'args'); 1 }, 'invalid command';
+my $file = __FILE__;
+like $@, qr/\Q$file/, 'caller context in error';
 isnt 0+$!, 0, '$! is set';
 
 done_testing;
