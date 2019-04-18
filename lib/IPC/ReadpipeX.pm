@@ -4,26 +4,17 @@ use strict;
 use warnings;
 use Carp 'croak';
 use Exporter 'import';
-use IPC::Open3;
 
 our $VERSION = '0.001';
 
 our @EXPORT = 'readpipex';
 
 sub readpipex {
-  my @cmd = @_;
-  # IPC::Open3 closes the STDIN handle in the parent, so give it a dup of STDIN
-  open my $dup, '<&', \*STDIN or croak "dup STDIN failed: $!";
-  my $stdin = '<&' . fileno $dup;
-  my ($pid, $stdout, $error);
-  {
-    local $@;
-    $error = $@ unless eval { $pid = open3 $stdin, $stdout, '>&STDERR', @cmd; 1 };
-  }
-  # Rethrow for better context
-  croak $error if defined $error;
-  my @output = wantarray ? readline($stdout) : do { local $/; scalar readline $stdout };
-  waitpid $pid, 0;
+  no warnings 'exec';
+  open my $stdout, '-|', @_ or croak "readpipex '$_[0]' failed: $!";
+  my @output = wantarray ? readline($stdout)
+    : do { local $/; scalar readline $stdout };
+  close $stdout;
   return wantarray ? @output : $output[0];
 }
 
@@ -76,15 +67,15 @@ Errors forking or running the command will raise an exception, and
 L<$!|perlvar/"$!"> will be set to the error code. The exit status of the
 process is otherwise available in L<$?|perlvar/"$?"> as normal.
 
-On systems that support forking with Perl 5.8 or newer, and Windows with Perl
-5.22 or newer, the simple code below can be copy-pasted to implement readpipex.
+The code of this function can easily be copy-pasted and is shown below.
 
   sub readpipex {
     no warnings 'exec';
     open my $stdout, '-|', @_ or die "readpipex '$_[0]' failed: $!";
-    my @output = readline $stdout;
+    my @output = wantarray ? readline($stdout)
+      : do { local $/; scalar readline $stdout };
     close $stdout;
-    return wantarray ? @output : join '', @output;
+    return wantarray ? @output : $output[0];
   }
 
 =head1 CAVEATS
@@ -94,6 +85,11 @@ On systems that support forking with Perl 5.8 or newer, and Windows with Perl
 =item *
 
 Behavior when passing no arguments is unspecified.
+
+=item *
+
+The C<-|> open mode requires Perl 5.8 or newer on a system that supports
+forking, or Perl 5.22 or newer on Windows.
 
 =item *
 
