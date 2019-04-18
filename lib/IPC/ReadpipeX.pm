@@ -22,9 +22,9 @@ sub readpipex {
   }
   # Rethrow for better context
   croak $error if defined $error;
-  my @output = readline $stdout;
+  my @output = wantarray ? readline($stdout) : do { local $/; scalar readline $stdout };
   waitpid $pid, 0;
-  return wantarray ? @output : join '', @output;
+  return wantarray ? @output : $output[0];
 }
 
 1;
