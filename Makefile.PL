@@ -18,8 +18,7 @@ my %WriteMakefileArgs = (
   "NAME" => "IPC::ReadpipeX",
   "PREREQ_PM" => {
     "Carp" => 0,
-    "Exporter" => "5.57",
-    "IPC::Open3" => 0
+    "Exporter" => "5.57"
   },
   "TEST_REQUIRES" => {
     "ExtUtils::MakeMaker" => 0,
@@ -39,7 +38,6 @@ my %FallbackPrereqs = (
   "Exporter" => "5.57",
   "ExtUtils::MakeMaker" => 0,
   "File::Spec" => 0,
-  "IPC::Open3" => 0,
   "Test::More" => "0.88",
   "Test::Warnings" => 0
 );

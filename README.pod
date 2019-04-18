@@ -47,15 +47,15 @@ Errors forking or running the command will raise an exception, and
 L<$!|perlvar/"$!"> will be set to the error code. The exit status of the
 process is otherwise available in L<$?|perlvar/"$?"> as normal.
 
-On systems that support forking with Perl 5.8 or newer, and Windows with Perl
-5.22 or newer, the simple code below can be copy-pasted to implement readpipex.
+The code of this function can easily be copy-pasted and is shown below.
 
   sub readpipex {
     no warnings 'exec';
     open my $stdout, '-|', @_ or die "readpipex '$_[0]' failed: $!";
-    my @output = readline $stdout;
+    my @output = wantarray ? readline($stdout)
+      : do { local $/; scalar readline $stdout };
     close $stdout;
-    return wantarray ? @output : join '', @output;
+    return wantarray ? @output : $output[0];
   }
 
 =head1 CAVEATS
@@ -65,6 +65,11 @@ On systems that support forking with Perl 5.8 or newer, and Windows with Perl
 =item *
 
 Behavior when passing no arguments is unspecified.
+
+=item *
+
+The C<-|> open mode requires Perl 5.8 or newer on a system that supports
+forking, or Perl 5.22 or newer on Windows.
 
 =item *
 
