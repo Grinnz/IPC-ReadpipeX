@@ -446,14 +446,19 @@
             "version" : "6.012"
          },
          {
-            "class" : "Dist::Zilla::Plugin::MakeMaker",
+            "class" : "Dist::Zilla::Plugin::MakeMaker::Awesome",
             "config" : {
+               "Dist::Zilla::Plugin::MakeMaker" : {
+                  "make_path" : "make",
+                  "version" : "6.012"
+               },
                "Dist::Zilla::Role::TestRunner" : {
-                  "default_jobs" : 1
+                  "default_jobs" : 1,
+                  "version" : "6.012"
                }
             },
-            "name" : "@Author::DBOOK/MakeMaker",
-            "version" : "6.012"
+            "name" : "@Author::DBOOK/MakeMaker::Awesome",
+            "version" : "0.47"
          },
          {
             "class" : "Dist::Zilla::Plugin::RunExtraTests",
