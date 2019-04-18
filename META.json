@@ -38,7 +38,9 @@
       },
       "runtime" : {
          "requires" : {
+            "Carp" : "0",
             "Exporter" : "5.57",
+            "IPC::Open3" : "0",
             "perl" : "5.008001"
          }
       },
