@@ -1,4 +1,5 @@
 {{$NEXT}}
+  - Fix tests to not trigger weird failures on Windows
 
 0.001     2019-04-18 18:31:56 EDT
   - First release
