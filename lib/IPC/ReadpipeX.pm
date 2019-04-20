@@ -5,7 +5,7 @@ use warnings;
 use Carp 'croak';
 use Exporter 'import';
 
-our $VERSION = '0.002';
+our $VERSION = '0.003';
 
 our @EXPORT = 'readpipex';
 
