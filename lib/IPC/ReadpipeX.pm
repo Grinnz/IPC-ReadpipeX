@@ -78,6 +78,10 @@ The code of this function can easily be copy-pasted and is shown below.
     return wantarray ? @output : $output[0];
   }
 
+The above code snippet may be considered to be licensed under
+L<The Unlicense|https://choosealicense.com/licenses/unlicense/>
+for the purpose of copying without attribution or warranty.
+
 =head1 CAVEATS
 
 =over
