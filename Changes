@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.003     2020-01-22 19:14:50 EST
   - The copy-pastable implementation of readpipex shown in the documentation
     (unchanged from previous versions) is now licensed under The Unlicense so
     it may be freely copied without attribution or warranty.
