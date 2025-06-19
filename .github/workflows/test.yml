@@ -31,7 +31,7 @@ jobs:
         uses: perl-actions/install-with-cpanm@v1
         with:
           sudo: false
-          args: --sudo --installdeps --with-develop --with-recommends .
+          args: --sudo --installdeps --with-recommends .
       - name: configure with Build.PL
         if: ${{ hashFiles('/Build.PL') != '' }}
         run: perl Build.PL
@@ -90,7 +90,7 @@ jobs:
         uses: perl-actions/install-with-cpanm@v1
         with:
           sudo: false
-          args: -v --installdeps --with-develop --with-recommends .
+          args: -v --installdeps --with-recommends .
       - name: configure with Build.PL
         if: ${{ hashFiles('/Build.PL') != '' }}
         run: perl Build.PL
